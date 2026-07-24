@@ -52,6 +52,13 @@ def main():
     print(f"\nAfter filtering to hourly only: {len(df)} rows")
     print(f"Expected ~26,280 for 3 years. Difference: {26280 - len(df)}")
 
+    # Handle small gaps via linear interpolation
+    df["load_mw"] = df["load_mw"].interpolate(method="linear", limit_direction="both")
+    
+    # Verify no NaNs remain
+    assert df.isna().sum().sum() == 0, "NaNs still present after interpolation"
+    print("Interpolated year-boundary gaps successfully.")
+
     # Save as Parquet
     processed_path = PROCESSED_DIR / "italy_load_hourly.parquet"
     df.to_parquet(processed_path, index=False)
